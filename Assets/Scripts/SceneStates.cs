@@ -1,28 +1,25 @@
 using System;
 using System.Collections.Generic;
+using AwakeSolutions;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class WaitingModeState : AbstractSceneState
 {
-    public WaitingModeState(SceneController controller) : base(controller)
-    {
-    }
+    public WaitingModeState(SceneController controller) : base(controller){}
 
     public override void OnUpdate()
     {
         if (Input.GetKeyDown(KeyCode.Alpha0) || Input.GetKeyDown(KeyCode.Q))
         {
-            _controller.TransitionFront();
+            /*_controller.TransitionFront();*/
+            _controller.ShowTransitionFront();
             _controller.SetNextState();
         }
     }
 
     public override void OnEnter()
     {
-        GC.Collect();
-        Resources.UnloadUnusedAssets();
-        
         _controller.DelayAction(_controller.backDelay, () =>
         {
             _controller.BackScreenContent.Open(_controller.VideosFolder, "BackScreenBackground", true, true);
@@ -34,21 +31,15 @@ public class WaitingModeState : AbstractSceneState
             _controller.FrontScreenWM.Play();
             _controller.FrontScreenWM.SetOpaque();});
     }
-
-    public override void OnExit()
-    {
-        
-    }
-    
 }
 
 public class PlayModeState : AbstractSceneState
 {
+    public PlayModeState(SceneController controller) : base(controller){}
+    
     private List<bool> _kernStates = new List<bool>(){false, false, false};
- 
     private UnityEvent<int> _kernDownEvent = new UnityEvent<int>();
     private UnityEvent<int> _kernUpEvent = new UnityEvent<int>();
-
     private bool _readyMessageShown;
     private bool _isTransitionStarted;
 
@@ -56,6 +47,7 @@ public class PlayModeState : AbstractSceneState
     {
         _controller.SetKernState(kernIndex, true);
         _kernStates[kernIndex] = true;
+        AwakeSoundManager.Play("stand");
     }
 
     private void OnKernUp(int kernIndex)
@@ -64,17 +56,13 @@ public class PlayModeState : AbstractSceneState
         _kernStates[kernIndex] = false;
     }
     
-    
-    public PlayModeState(SceneController controller) : base(controller)
-    {
-    }
-
     public override void OnEnter()
     {
         _controller.DelayAction(_controller.frontDelay, () =>
         {
             _controller.FrontScreenWM.SetTransparent();
             _controller.FrontScreenPM.SetOpaque();
+            _controller.FrontScreenPM.Play();
         });
         
         _kernDownEvent.AddListener(OnKernDown);
@@ -102,6 +90,7 @@ public class PlayModeState : AbstractSceneState
         {
             _controller.ShowReadyMessage();
             _readyMessageShown = true;
+            AwakeSoundManager.Play("ready");
         }
         else if(_kernStates.Contains(false))
         {
@@ -117,38 +106,49 @@ public class PlayModeState : AbstractSceneState
             _controller.HideReadyMessage();
             _isTransitionStarted = true;
         }
+
+        if (Input.GetKeyDown(KeyCode.Backspace))
+        {
+            _controller.SetWaitingMode();
+            _controller.FrontScreenPM.SetTransparent();
+        }
     }
     
     public override void OnExit()
     {
-        
+        _controller.FrontScreenPM.Pause();
     }
- 
 }
 
 public class ContentMode : AbstractSceneState
 {
-    public ContentMode(SceneController controller) : base(controller)
-    {
-        
-    }
+    public ContentMode(SceneController controller) : base(controller){}
 
     public override void OnEnter()
     {
         _controller.DelayAction(_controller.backDelay, () =>
+        {
+            _controller.BackScreenContent.Open(_controller.VideosFolder, "show_back", false, false);
+            _controller.BackScreenContent.Play();
+        });
+        
+        _controller.DelayAction(_controller.frontDelay, () =>
         {
             _controller.FrontScreenPM.SetTransparent();
             _controller.FrontScreenShowMode.SetOpaque();
             _controller.FrontScreenShowMode.Play();
         });
         
-        _controller.DelayAction(_controller.frontDelay, () =>
+        _controller.FrontScreenShowMode.ContentPlayer.onFinished.AddListener(StartTransition);
+    }
+
+    public override void OnUpdate()
+    {
+        if (Input.GetKeyDown(KeyCode.Backspace))
         {
-            _controller.BackScreenContent.Open(_controller.VideosFolder, "show_back", false, true);
-            _controller.BackScreenContent.Play();
-        });
-        
-        _controller.FrontScreenShowMode._contentPlayer.onFinished.AddListener(StartTransition);
+            _controller.FrontScreenShowMode.Pause();
+            StartTransition();
+        }
     }
 
     private void StartTransition()
@@ -159,7 +159,7 @@ public class ContentMode : AbstractSceneState
 
     public override void OnExit()
     {
-        _controller.FrontScreenShowMode._contentPlayer.onFinished.RemoveListener(StartTransition);
+        _controller.FrontScreenShowMode.ContentPlayer.onFinished.RemoveListener(StartTransition);
     }
     
 }

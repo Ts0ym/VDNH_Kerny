@@ -86,15 +86,6 @@ public class SceneController : MonoBehaviour
         _currentState.OnUpdate();
     }
     
-    private void ShowTransitionFront()
-    {
-        FrontScreenTransition.SetOpaque();
-        FrontScreenTransition.SetSpeed(1);
-        FrontScreenTransition.Play();
-        
-        this.DelayAction(frontDuration, () => { FrontScreenTransition.SetTransparent(); });
-    }
-
     private void ShowTransitionBack()
     {
         BackScreenTransition.SetOpaque();
@@ -103,11 +94,24 @@ public class SceneController : MonoBehaviour
         
         this.DelayAction(backDuration, () => { BackScreenTransition.SetTransparent(); });
     }
+
+    private void CleanMemory()
+    {
+        GC.Collect();
+        Resources.UnloadUnusedAssets();
+    }
     
     #endregion
 
-
     #region public methods
+    
+    public void SetWaitingMode()
+    {
+        _currentState.OnExit();
+        _currentStateIndex = 0;
+        _currentState = _sceneStates[_currentStateIndex];
+        _currentState.OnEnter();
+    }
     
     public void SetNextState()
     {
@@ -127,6 +131,8 @@ public class SceneController : MonoBehaviour
             _currentState = _sceneStates[_currentStateIndex];
             _currentState.OnEnter();
         }
+        
+        CleanMemory();
     }
 
     public void SetKernState(int kernId, bool state)
@@ -150,11 +156,14 @@ public class SceneController : MonoBehaviour
         ShowTransitionBack();
         ShowTransitionFront();
     }
-
-
-    public void TransitionFront()
+    
+    public void ShowTransitionFront()
     {
-        ShowTransitionFront();
+        FrontScreenTransition.SetOpaque();
+        FrontScreenTransition.SetSpeed(1);
+        FrontScreenTransition.Play();
+        
+        this.DelayAction(frontDuration, () => { FrontScreenTransition.SetTransparent(); });
     }
 
     #endregion

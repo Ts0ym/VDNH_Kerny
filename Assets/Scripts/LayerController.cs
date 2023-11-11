@@ -3,42 +3,47 @@ using UnityEngine;
 
 public class LayerController : MonoBehaviour
 {
-    [SerializeField] public AwakeMediaPlayer _contentPlayer;
-    [SerializeField] public AlphaTransition _layerAlpha;
+    public AwakeMediaPlayer ContentPlayer;
+    public AlphaTransition LayerAlpha;
 
     public void Open(string folderName, string fileName, bool autoPlay = false, bool loop = false)
     {
-        _contentPlayer.Open(folderName,fileName, autoPlay, loop);
+        ContentPlayer.Open(folderName,fileName, autoPlay, loop);
     }
 
     public void StartFadeIn(float duration)
     {
-        _layerAlpha.StartFadeIn(duration);
+        LayerAlpha.StartFadeIn(duration);
     }
 
     public void StartFadeOut(float duration)
     {
-        _layerAlpha.StartFadeOut(duration);
+        LayerAlpha.StartFadeOut(duration);
     }
 
     public void SetOpaque()
     {
-        _layerAlpha.SetOpaque();
+        LayerAlpha.SetOpaque();
     }
 
     public void SetTransparent()
     {
-        _layerAlpha.SetTransparent();
+        LayerAlpha.SetTransparent();
     }
 
     public void SetSpeed(float speed)
     {
-        _contentPlayer.speed = speed;
+        ContentPlayer.speed = speed;
     }
 
     public void Play()
     {
-        _contentPlayer.Play();
-        _contentPlayer.Seek(0);
+        ContentPlayer.Play();
+        ContentPlayer.Seek(0);
+    }
+
+    public void Pause()
+    {
+        ContentPlayer.Pause();
     }
 }
