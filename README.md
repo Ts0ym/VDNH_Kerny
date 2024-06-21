@@ -40,7 +40,7 @@
 * И на Экране, и на Проекции через видео-переход запускается видео "Объяснение" (на Экране своё, на Проекции - своё). Оно не зациклено.
 
 ## Видео с демонстрацией работы на рабочем стенде
-https://drive.google.com/file/d/1kKHv32x3xxq90Gdhn1wx9n7a-9tJxX3m/view?usp=sharing
+https://drive.google.com/file/d/1OEdAr2K1gS7d-JvTMsqAcoBC5TGdllcD/view?usp=sharing
 
 ## Особенности
 - Проект адаптирован под 3 дисплея
