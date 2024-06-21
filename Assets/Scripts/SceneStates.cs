@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using AwakeSolutions;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Video;
 
 public class WaitingModeState : AbstractSceneState
 {
@@ -12,9 +13,9 @@ public class WaitingModeState : AbstractSceneState
     {
         if (Input.GetKeyDown(KeyCode.Alpha0) || Input.GetKeyDown(KeyCode.Q))
         {
-            /*_controller.TransitionFront();*/
             _controller.ShowTransitionFront();
             _controller.SetNextState();
+            AwakeSoundManager.Play("button");
         }
     }
 
@@ -30,6 +31,8 @@ public class WaitingModeState : AbstractSceneState
             _controller.FrontScreenWM.Open(_controller.VideosFolder, "FrontScreenContentWM", true, true);
             _controller.FrontScreenWM.Play();
             _controller.FrontScreenWM.SetOpaque();});
+        
+        _controller.PlayBackgroundSound();
     }
 }
 
@@ -91,11 +94,13 @@ public class PlayModeState : AbstractSceneState
             _controller.ShowReadyMessage();
             _readyMessageShown = true;
             AwakeSoundManager.Play("ready");
+            if(_controller.FrontScreenPM.ContentPlayer.isPlaying) _controller.FrontScreenPM.ContentPlayer.Mute();
         }
         else if(_kernStates.Contains(false))
         {
             _controller.HideReadyMessage();
             _readyMessageShown = false;
+            if(!_controller.FrontScreenPM.ContentPlayer.isPlaying) _controller.FrontScreenPM.ContentPlayer.UnMute();
         }
 
         if ((_readyMessageShown && Input.GetKeyDown(KeyCode.Alpha0) && !_isTransitionStarted) ||
@@ -112,20 +117,29 @@ public class PlayModeState : AbstractSceneState
             _controller.SetWaitingMode();
             _controller.FrontScreenPM.SetTransparent();
         }
+        
+        if (Input.GetKeyDown(KeyCode.Alpha0) || Input.GetKeyDown(KeyCode.Q))
+        {
+            AwakeSoundManager.Play("button");
+        }
     }
     
     public override void OnExit()
     {
         _controller.FrontScreenPM.Pause();
+        _controller.PauseBackgroundSound();
     }
 }
 
 public class ContentMode : AbstractSceneState
 {
+    private bool isCountdownPlayed = false;
     public ContentMode(SceneController controller) : base(controller){}
 
     public override void OnEnter()
     {
+        isCountdownPlayed = false;
+        _controller.FrontScreenShowMode.ContentPlayer.Seek(0);
         _controller.DelayAction(_controller.backDelay, () =>
         {
             _controller.BackScreenContent.Open(_controller.VideosFolder, "show_back", false, false);
@@ -148,6 +162,16 @@ public class ContentMode : AbstractSceneState
         {
             _controller.FrontScreenShowMode.Pause();
             StartTransition();
+        }
+
+        Debug.Log(_controller.FrontScreenShowMode.ContentPlayer.time);
+        // Debug.Log(_controller.FrontScreenShowMode.ContentPlayer.duration);
+        
+        if (_controller.FrontScreenShowMode.ContentPlayer.time >=
+            _controller.FrontScreenShowMode.ContentPlayer.duration - 1 && !isCountdownPlayed && _controller.FrontScreenShowMode.ContentPlayer.time < _controller.FrontScreenShowMode.ContentPlayer.duration - 0.1)
+        {
+            isCountdownPlayed = true;
+            AwakeSoundManager.Play("countdown");
         }
     }
 

@@ -81,7 +81,7 @@ namespace AwakeSolutions
             LoadAll();
         }
 
-        private static async void LoadAll()
+        public static async void LoadAll()
         {
             Debug.Log("Sounds loading started!");
 

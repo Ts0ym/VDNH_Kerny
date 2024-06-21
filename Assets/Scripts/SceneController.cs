@@ -25,6 +25,7 @@ public class SceneController : MonoBehaviour
     [Header("Media Players")]
     public string VideosFolder;
     [SerializeField] private AwakeMediaPlayer[] _kernStands;
+    [SerializeField] private AudioSource _backgroundSound;
     
     [Header("Layers Alpha")] 
     public AlphaTransition ReadyMessage;
@@ -79,6 +80,9 @@ public class SceneController : MonoBehaviour
         _currentStateIndex = 0;
         _currentState = _sceneStates[_currentStateIndex];
         _currentState.OnEnter();
+
+        /*Cursor.visible = false;*/
+        AwakeSoundManager.LoadAll();
     }
     
     private void Update()
@@ -164,6 +168,16 @@ public class SceneController : MonoBehaviour
         FrontScreenTransition.Play();
         
         this.DelayAction(frontDuration, () => { FrontScreenTransition.SetTransparent(); });
+    }
+
+    public void PlayBackgroundSound()
+    {
+        _backgroundSound.Play();
+    }
+
+    public void PauseBackgroundSound()
+    {
+        _backgroundSound.Pause();
     }
 
     #endregion

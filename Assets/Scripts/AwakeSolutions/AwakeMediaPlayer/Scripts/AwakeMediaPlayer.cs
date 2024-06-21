@@ -29,10 +29,12 @@ namespace AwakeSolutions
         public float speed = 1f;
 
         public double time { get { return _time; } }
+        public double duration { get { return _duration;  } }
         public bool isPlaying { get { return _hapPlayer != null ? speed != 0 : _videoPlayer != null ? _videoPlayer.isPlaying : false; } }
 
         public bool initOnStart = true;
         public bool debug = false;
+        
         #endregion
 
         #region events
@@ -51,6 +53,7 @@ namespace AwakeSolutions
         private RectTransform rectTransform;
 
         private double _time;
+        private double _duration;
 
         private bool isInitialized = false;
 
@@ -136,7 +139,7 @@ namespace AwakeSolutions
         public void Play()
         {
             if (playerType == PlayerType.VIDEO)
-                _videoPlayer.Play();
+                _videoPlayer.Play(); 
             else if (playerType == PlayerType.HAP)
             {
                 speed = 1;
@@ -186,6 +189,22 @@ namespace AwakeSolutions
             rawImage.texture = transparentTexture;
         }
 
+        public void Mute()
+        {
+            if (playerType == PlayerType.VIDEO)
+            {
+                _videoPlayer.SetDirectAudioMute(0, true);
+            }
+        }
+
+        public void UnMute()
+        {
+            if (playerType == PlayerType.VIDEO)
+            {
+                _videoPlayer.SetDirectAudioMute(0, false);
+            }
+        }
+
         #endregion
 
 
@@ -224,11 +243,14 @@ namespace AwakeSolutions
                 _videoPlayer.source = VideoSource.Url;
                 _videoPlayer.url = @Application.streamingAssetsPath + "/" + LocalizeFolderPath(folderPath) + "/" + fileName + "." + fileExtension;
                 _videoPlayer.isLooping = loop;
+                _videoPlayer.prepareCompleted += source => { _duration = source.length; };
             }
             else if (playerType == PlayerType.HAP)
             {
                 _hapPlayer.Open(LocalizeFolderPath(folderPath) + "/" + fileName + "." + fileExtension);
                 _hapPlayer.loop = loop;
+                _duration = _hapPlayer.streamDuration;
+
             }
             else if (playerType == PlayerType.IMAGE)
             {
